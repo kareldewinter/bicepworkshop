@@ -47,7 +47,7 @@ module virtualNetwork 'resources/network/virtualNetwork.bicep' = {
 
 module networkInterface 'resources/network/networkInterface.bicep' = {
   scope: resourceGroup_resource
-  name: '${deploymentNamePrefix}-NIC-${networkInterfaceName}'
+  name: '${deploymentNamePrefix}-VM-${networkInterfaceName}'
   dependsOn: [
     virtualNetwork
   ]
@@ -60,3 +60,4 @@ module networkInterface 'resources/network/networkInterface.bicep' = {
 }
 
 // Workshop resources
+

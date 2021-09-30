@@ -1,0 +1,347 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rg1Name": {
+      "type": "string",
+      "defaultValue": "d-rgr-bicep-01"
+    },
+    "rg1Location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "rg2Name": {
+      "type": "string",
+      "defaultValue": "d-rgr-bicep-02"
+    },
+    "rg2Location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "vnet1Name": {
+      "type": "string",
+      "defaultValue": "d-vne-bicep-01"
+    },
+    "vnet2Name": {
+      "type": "string",
+      "defaultValue": "d-vne-bicep-02"
+    }
+  },
+  "functions": [],
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('rg1Name')]",
+      "location": "[parameters('rg1Location')]"
+    },
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('rg2Name')]",
+      "location": "[parameters('rg2Location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "vnet1",
+      "resourceGroup": "[parameters('rg1Name')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vnetName": {
+            "value": "[parameters('vnet1Name')]"
+          },
+          "addressPrefixes": {
+            "value": [
+              "10.0.0.0/8"
+            ]
+          },
+          "subnet1Name": {
+            "value": "[format('d-sne{0}-01', parameters('vnet1Name'))]"
+          },
+          "subnet2Name": {
+            "value": "[format('d-sne{0}-02', parameters('vnet1Name'))]"
+          },
+          "subnet1AddressPrefix": {
+            "value": "10.1.1.0/24"
+          },
+          "subnet2AddressPrefix": {
+            "value": "10.1.2.0/24"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "vnetName": {
+              "type": "string"
+            },
+            "addressPrefixes": {
+              "type": "array"
+            },
+            "subnet1Name": {
+              "type": "string"
+            },
+            "subnet2Name": {
+              "type": "string"
+            },
+            "subnet1AddressPrefix": {
+              "type": "string"
+            },
+            "subnet2AddressPrefix": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "functions": [],
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-06-01",
+              "location": "[parameters('location')]",
+              "name": "[parameters('vnetName')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": "[parameters('addressPrefixes')]"
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('subnet1Name')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('subnet1AddressPrefix')]"
+                    }
+                  },
+                  {
+                    "name": "[parameters('subnet2Name')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('subnet2AddressPrefix')]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rg1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "vnet2",
+      "resourceGroup": "[parameters('rg2Name')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vnetName": {
+            "value": "[parameters('vnet2Name')]"
+          },
+          "addressPrefixes": {
+            "value": [
+              "172.16.0.0/16"
+            ]
+          },
+          "subnet1Name": {
+            "value": "[format('d-sne{0}-01', parameters('vnet2Name'))]"
+          },
+          "subnet2Name": {
+            "value": "[format('d-sne{0}-02', parameters('vnet2Name'))]"
+          },
+          "subnet1AddressPrefix": {
+            "value": "172.16.1.0/24"
+          },
+          "subnet2AddressPrefix": {
+            "value": "172.16.2.0/24"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "vnetName": {
+              "type": "string"
+            },
+            "addressPrefixes": {
+              "type": "array"
+            },
+            "subnet1Name": {
+              "type": "string"
+            },
+            "subnet2Name": {
+              "type": "string"
+            },
+            "subnet1AddressPrefix": {
+              "type": "string"
+            },
+            "subnet2AddressPrefix": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "functions": [],
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-06-01",
+              "location": "[parameters('location')]",
+              "name": "[parameters('vnetName')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": "[parameters('addressPrefixes')]"
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('subnet1Name')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('subnet1AddressPrefix')]"
+                    }
+                  },
+                  {
+                    "name": "[parameters('subnet2Name')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('subnet2AddressPrefix')]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rg2Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "peering1",
+      "resourceGroup": "[parameters('rg1Name')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "localVnetName": {
+            "value": "[parameters('vnet1Name')]"
+          },
+          "remoteVnetName": {
+            "value": "[parameters('vnet2Name')]"
+          },
+          "remoteVnetRg": {
+            "value": "[parameters('rg2Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "localVnetName": {
+              "type": "string"
+            },
+            "remoteVnetName": {
+              "type": "string"
+            },
+            "remoteVnetRg": {
+              "type": "string"
+            }
+          },
+          "functions": [],
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "apiVersion": "2020-05-01",
+              "name": "[format('{0}/peering-to-remote-vnet', parameters('localVnetName'))]",
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId(parameters('remoteVnetRg'), 'Microsoft.Network/virtualNetworks', parameters('remoteVnetName'))]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rg1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "peering2",
+      "resourceGroup": "[parameters('rg2Name')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "localVnetName": {
+            "value": "[parameters('vnet2Name')]"
+          },
+          "remoteVnetName": {
+            "value": "[parameters('vnet1Name')]"
+          },
+          "remoteVnetRg": {
+            "value": "[parameters('rg1Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "localVnetName": {
+              "type": "string"
+            },
+            "remoteVnetName": {
+              "type": "string"
+            },
+            "remoteVnetRg": {
+              "type": "string"
+            }
+          },
+          "functions": [],
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "apiVersion": "2020-05-01",
+              "name": "[format('{0}/peering-to-remote-vnet', parameters('localVnetName'))]",
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId(parameters('remoteVnetRg'), 'Microsoft.Network/virtualNetworks', parameters('remoteVnetName'))]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rg2Name'))]"
+      ]
+    }
+  ]
+}

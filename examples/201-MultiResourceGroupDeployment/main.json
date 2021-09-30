@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rg1": {
+      "type": "string"
+    },
+    "rg1Location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "storageAccountNamePrefix": {
+      "type": "string"
+    }
+  },
+  "functions": [],
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('rg1')]",
+      "location": "[parameters('rg1Location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "storageDeploy",
+      "resourceGroup": "[parameters('rg1')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('rg1Location')]"
+          },
+          "namePrefix": {
+            "value": "[parameters('storageAccountNamePrefix')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": ""
+            }
+          },
+          "functions": [],
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2019-06-01",
+              "name": "[format('{0}{1}', parameters('namePrefix'), uniqueString(resourceGroup().id))]",
+              "location": "[parameters('location')]",
+              "kind": "StorageV2",
+              "sku": {
+                "name": "Standard_GRS"
+              },
+              "properties": {
+                "supportsHttpsTrafficOnly": true
+              }
+            }
+          ],
+          "outputs": {
+            "blobEndpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', format('{0}{1}', parameters('namePrefix'), uniqueString(resourceGroup().id)))).primaryEndpoints.blob]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rg1'))]"
+      ]
+    }
+  ]
+}
