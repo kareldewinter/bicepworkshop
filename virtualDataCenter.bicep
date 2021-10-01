@@ -25,6 +25,29 @@ param networkInterfaceName string = 'mytestvm01-nic'
 
 // Workshop parameters
 
+@secure()
+param adminPassword string
+
+
+param virtualMachineObject object = {
+  virtualMachineName: 'VMLAB01' 
+
+  adminUsername: 'azureuser'
+  adminPassword: adminPassword
+
+  vmSize: 'Standard_DS2_v2'
+  imagePublisher: 'MicrosoftWindowsServer'
+  imageOffer: 'WindowsServer'
+  imageSku: '2022-datacenter-g2'
+
+  diskObjectList: [
+    {
+      osDiskName: 'VMLAB01-osdisk'
+      osDiskSizeGB: 256
+    }
+  ]
+}
+
 
 // Resource declaration
 resource resourceGroup_resource 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -47,7 +70,7 @@ module virtualNetwork 'resources/network/virtualNetwork.bicep' = {
 
 module networkInterface 'resources/network/networkInterface.bicep' = {
   scope: resourceGroup_resource
-  name: '${deploymentNamePrefix}-VM-${networkInterfaceName}'
+  name: '${deploymentNamePrefix}-NIC-${networkInterfaceName}'
   dependsOn: [
     virtualNetwork
   ]
@@ -60,4 +83,26 @@ module networkInterface 'resources/network/networkInterface.bicep' = {
 }
 
 // Workshop resources
+module virtualMachine 'resources/compute/virtualMachine.bicep' = {
+  scope: resourceGroup_resource
+  name: '${deploymentNamePrefix}-VM-${networkInterfaceName}'
+  dependsOn: [
+    networkInterface
+  ]
+  params: {
+    resourceName: virtualMachineObject.virtualMachineName
+    
+    location: location
+    networkInterfaceName: networkInterfaceName
+    networkInterfaceResourceGroupName: resourceGroup_resource.name
 
+    adminUsername: virtualMachineObject.adminUsername
+    adminPassword: virtualMachineObject.adminPassword
+    osDiskName: virtualMachineObject.diskObjectList[0].osDiskName
+    osDiskSizeGB: virtualMachineObject.diskObjectList[0].osDiskSizeGB
+    vmSize: virtualMachineObject.vmSize
+    imagePublisher: virtualMachineObject.imagePublisher
+    imageOffer: virtualMachineObject.imageOffer
+    imageSku: virtualMachineObject.imageSku
+  }
+}
